@@ -2,24 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "monster.h"
+
 #define INITBUFFSIZE 256
 
 #define getline(lineptr, n, stream) getdelim(lineptr, n, '\n', stream)
-
-typedef struct item {
-  int hpdelta;
-  int damagedelta;
-  struct item *next;
-  char *name;
-} item;
-
-typedef struct monster {
-  int maxhp;
-  int hp;
-  int damage;
-  item *inventory;
-  char *name;
-} monster;
 
 ssize_t getdelim (char **lineptr, size_t *n, int delimiter, FILE *stream) {
   if (stream == NULL)
@@ -65,102 +52,6 @@ char *chomp(char *str) {
   return str;          // this, I can live without thirty bytes.
 }                      
 
-item *item_New(int hpdelta, int damagedelta, const char name[]) {
-  item *output = malloc(sizeof(item));
-  output->hpdelta = hpdelta;
-  output->damagedelta = damagedelta;
-  output->name = malloc((sizeof(char)) * (strlen(name) + 1));
-  output->next = NULL;
-  return output;
-}
-
-void item_Destroy(item *item) {
-  free(item->name);
-  free(item);
-}
-
-int item_Append(item **list, item *new) {
-  if (!list) {
-    *list = new;
-    return 0;
-  }
-  int i = 0;
-  item *inter = *list;
-  while (inter->next) {
-    inter = inter->next;
-    i++;
-  }
-  inter->next = new;
-  return i;
-}
-
-void item_Remove(item **list, int entry) {
-  if (entry == 0) {
-    item *inter = *list;
-    *list = (*list)->next;
-    item_Destroy(inter);
-    return;
-  }
-  item *inter = *list;
-  for (int i = 0; i < entry - 1; i++)
-    inter = inter->next;
-
-  item *removal = inter->next;
-  inter->next = inter->next->next;
-  item_Destroy(removal);
-}
-
-void item_ChainDestroy(item *list) {
-  do {
-    item *inter = list->next;
-    item_Destroy(list);
-    list = inter;
-  } while (list);
-}
-
-void printitems(item *inv) {
-  if (!inv) {
-    puts("No items.");
-    return;
-  } else
-    do {
-      printf("%s\n", inv->name);
-      inv = inv->next;
-    } while (inv);
-}
-
-item *item_Nth(item *list, int num) {
-  int i;
-  for (i = 0; i < num; i++)
-    if ((list = list->next) == NULL)
-      return NULL;
-  return list;
-}
-
-monster *monster_New(int maxhp, int hp, int damage,
-		     item *inventory, char *name) {
-  monster *output = (monster *)malloc(sizeof(monster));
-  output->maxhp = maxhp;
-  output->hp = hp;
-  output->damage = damage;
-  output->inventory = inventory;
-  output->name = name;
-
-  return output;
-}
-
-void monster_Delete(monster *mon) {
-  item_ChainDestroy(mon->inventory);
-  free(mon);
-}
-
-int damage(monster *from, monster *to) {
-  to->hp -= from->damage;
-  if (to->hp <= 0)
-    printf("%s is dead.\n", to->name);
-  return to->hp;
-}
-
 int main(int argc, char *argv[]) {
   puts("Welcome to MythicQuest.");
   printf("Your name is...\n> ");
@@ -168,8 +59,12 @@ int main(int argc, char *argv[]) {
   size_t namelen = 0;
   getline(&name, &namelen, stdin);
   printf("a - Attack\ni - Item\nq - Quit\n");
-  monster *player = monster_New(100, 100, 5, NULL, chomp(name));
-  monster *enemy = monster_New(100, 100, 2, NULL, "Enemy");
+  char *pstages[1] = { "Go!\n" };
+  char *estages[3] = { "We will carry out the new creation of destruction through the power of righteousness.\n", "We will remove the unnecessary borders from the earth.\n", "The world will change.\n" };
+  monster *player = monster_New(100, 5, NULL, chomp(name),
+				"Dead FOREVER\n", 1, pstages);
+  monster *enemy = monster_New(100, 2, NULL, "Enemy",
+			       "This isn't over!", 3, estages);
   int quit = 0;
   char input;
   do {
