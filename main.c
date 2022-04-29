@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
   char *name = NULL;
   size_t namelen = 0;
   getline(&name, &namelen, stdin);
-  printf("a - Attack\ni - Item\nq - Quit\n");
+  printf("a - Attack\nh - Heal\nq - Quit\n");
   char *pstages[1] = { "Go!\n" };
   char *estages[3] = { "We will carry out the new creation of destruction through the power of righteousness.\n", "We will remove the unnecessary borders from the earth.\n", "The world will change.\n" };
   monster *player = monster_New(100, 5, NULL, chomp(name),
@@ -68,15 +68,16 @@ int main(int argc, char *argv[]) {
   int quit = 0;
   char input;
   do {
-    printf("[aiq]> ");
+    printf("[ahq]> ");
     do {
       input = getc(stdin);
       switch (input) {
       case 'a':
 	damage(player, enemy);
 	goto getout;
-      case 'i':
-	printitems(player->inventory);
+      case 'h':
+	player->hp += 5;
+	printf("Healed a bit.\n");
 	goto getout;
       case 'q':
 	quit = 1;
