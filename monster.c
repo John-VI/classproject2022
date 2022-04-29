@@ -95,7 +95,7 @@ monster *monster_New(int hp, int damage,
 }
 
 void monster_Delete(monster *mon) {
-  item_ChainDestroy(mon->inventory);
+  //item_ChainDestroy(mon->inventory);
   free(mon);
 }
 
